@@ -1,0 +1,33 @@
+---
+title: "Individual assignment10"
+output: html_document
+date: '2022-12-02'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+summary(USArrests)
+str(USArrests)
+```
+
+# (a)
+```{r}
+hc.complete=hclust(dist(USArrests),method="complete")
+plot(hc.complete)
+```
+
+# (b)
+```{r}
+cutree(hc.complete,3)
+```
+# (c)
+```{r}
+xsc=scale(USArrests)
+plot(hclust(dist(xsc),method="complete"))
+```
+
+# (d)
+The components of the clusters have changed because the higher weight of some variables could easily dominate the other variables. So the variables should be scaled to keep contribution equal in calculating similarities.

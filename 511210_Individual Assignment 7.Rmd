@@ -1,0 +1,52 @@
+---
+title: "Individual Assignment7"
+output: html_document
+date: '2022-11-06'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ISLR)
+library(tree)
+```
+
+# (a)
+```{r}
+attach(Carseats)
+set.seed(1)
+train=sample(1:nrow(Carseats),nrow(Carseats)*0.7)
+test=(-train)
+```
+# (b)
+```{r}
+tree.carseat=tree(Sales~.,Carseats,subset = train)
+summary(tree.carseat)
+plot(tree.carseat)
+text(tree.carseat,pretty=0)
+```
+There are 6 variables that are automatically chosen to build the regression with 18 nodes.
+```{r}
+yhat=predict(tree.carseat,Carseats[test,])
+sales.test=Carseats[test,"Sales"]
+mean((yhat-sales.test)^2)
+```
+The MSE is 4.208383
+```{r}
+set.seed(2)
+cv.car=cv.tree(tree.carseat)
+plot(cv.car$size,cv.car$dev,type="b")
+```
+
+According to the results, size=8 could be the best.
+```{r}
+prune.car=prune.tree(tree.carseat, best=8)
+plot(prune.car)
+text(prune.car,pretty=0)
+```
+
+```{r}
+yhat=predict(prune.car,Carseats[test,])
+sales.test=Carseats[test,"Sales"]
+mean((yhat-sales.test)^2)
+```
+Compared to the previous tree's test MSE 4.208383, the new model's MSE 4.579256 does not improve test MSE.

@@ -1,0 +1,55 @@
+---
+title: "Individual Assignment 6"
+output: html_document
+date: '2022-10-28'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1)
+x=rnorm(100,0,10)
+y= 10 + 20*x + 30*x^2+ 40*x^3+ rnorm(100,0,50)
+```
+
+# (e)
+```{r}
+library(glmnet)
+set.seed(1)
+cv.lasso = cv.glmnet(poly(x,10),y, alpha=1)
+plot(cv.lasso)
+cv.lasso$lambda.min
+```
+```{r}
+lasso.mod1=glmnet(poly(x,10),y,alpha=1,lambda=cv.lasso$lambda.min)
+coef(lasso.mod1)[,1]
+```
+->According to the results the best lambda value in this model is 1918.04 and the best model using LASSO keeps x, x^2 and x^3, removing other insignificant predictors.
+
+# (f)
+```{r}
+library(leaps)
+set.seed(1)
+y=10+7*x^7+rnorm(100,0,50)
+regit.full=regsubsets(y ~ poly(x,10), data = data.frame(x = x,y = y), nvmax = 10)
+reg.summary=summary(regit.full)
+which.max(reg.summary$adjr2)
+which.min(reg.summary$cp)
+which.min(reg.summary$bic)
+```
+```{r}
+coef(regit.full,7)
+coef(regit.full,9)
+```
+->By using best subset selection, we can get the best model using maximum adjusted-Rsquare includes 7 predictors and removes x^8,x^9,x^10; the best model using minimum Cp and BIC include 9 predictors and remove x^9.
+
+```{r}
+cv.lasso2=cv.glmnet(poly(x,10),y, alpha=1)
+lasso.mod2=glmnet(poly(x,10),y,alpha = 1,lambda=cv.lasso2$lambda.min)
+plot(cv.lasso2)
+cv.lasso2$lambda.min
+coef(lasso.mod2)[,1]
+```
+->According to the results the best lambda value in this model is 47142562 and the best model using LASSO keeps x, x^2, x^3, x^4, x^5, x^6, x^7,removing other insignificant predictors.

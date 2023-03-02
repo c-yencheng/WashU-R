@@ -1,0 +1,51 @@
+---
+title: "Individual assignment 2"
+output:
+  html_document:
+    df_print: paged
+date: '2022-09-18'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#(a)
+
+```{r}
+library("ISLR")
+attach(Carseats)
+
+lm.fit=lm(Sales~Price+Urban+US)
+summary(lm.fit)
+```
+#(b)
+In this model, the "price" and "US" predictors have low enough P-value to reject the null hypothesis and to keep in the model, while "Urban" fail to reject so it should not be used in the model, and it has nothing to to with the predict sales.
+When "Price" go up and other predictors remain the same, the predict sales get lower. On the other hand, when "US" is "Yes" and other attributes remain the same, the predict sales get higher.
+
+#(c)
+Sales = 13.04369 - 0.054459*Price + 1.200573*US(when US=yes,US=1, when US=NO,US=0)
+
+#(d)
+We can reject the null hypothesis of the predictor "Urban".
+
+#(e)
+```{r}
+lm.fite=lm(Sales~Price+US)
+summary(lm.fite)
+```
+#(f)
+According to the model in (a) and (e), the R-squared data are 0.2335 and 0.2354 respectively, which means about 24% change of sales can be explained by the models.
+
+#(g)
+According to the model (e), the 95% confidence intervals for the coefficients are:
+```{r}
+confint(lm.fite,level = 0.95)
+```
+
+#(h)
+```{r}
+par(mfrow=c(2,2))
+plot(lm.fite)
+```
+As the Normal Q-Q plot and Residuals vs Leverage plot shown above, there is not enough evidence of outliers or high leverage observations in the model.

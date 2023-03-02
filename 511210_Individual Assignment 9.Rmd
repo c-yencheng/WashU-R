@@ -1,0 +1,83 @@
+---
+title: "Individual Assignment9"
+output: html_document
+date: '2022-11-18'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(neuralnet)
+library(gains)
+library(caret)
+```
+
+#(a)
+```{r}
+df=read.csv("EastWestAirlinesNN.csv",header=TRUE)
+df=na.omit(df)
+summary(df)
+str(df)
+```
+```{r}
+numerical=c('Topflight','Balance','Qual_miles','cc1_miles.','cc2_miles.','cc3_miles.','Bonus_miles','Bonus_trans','Flight_miles_12mo','Flight_trans_12','Online_12','Email','Club_member','Any_cc_miles_12mo','Phone_sale')
+norm.values=preProcess(df[,numerical],method='range')
+df[,numerical]=predict(norm.values,df[,numerical])
+```
+
+```{r}
+set.seed(1)
+train=sample(1:nrow(df),nrow(df)*0.7)
+test=(-train)
+```
+
+```{r}
+set.seed(1)
+nn <- neuralnet(Phone_sale~.-ID., data = df[train,], linear.output = T, hidden = 5)
+
+plot(nn, rep="best")
+```
+```{r}
+nn.train=predict(nn,newdata=df[train,])
+gain.train = gains(df[train,]$Phone_sale, nn.train)
+heights = gain.train$mean.resp/mean(df[train,]$Phone_sale)
+bar1 = barplot(heights,names.arg=gain.train$depth,xlab="Percentile",ylab="Response Ratio")
+text(bar1,heights,labels=round(heights,2),pos=1)
+```
+```{r}
+nn.valid=predict(nn,newdata=df[-train,])
+gain.valid = gains(df[-train,]$Phone_sale, nn.valid)
+heights = gain.valid$mean.resp/mean(df[-train,]$Phone_sale)
+bar2 = barplot(heights,names.arg=gain.valid$depth,xlab="Percentile",ylab="Response Ratio")
+text(bar2,heights,labels=round(heights,2),pos=1)
+```
+
+
+
+# (b)
+According to the two decile-wise charts, the model perform well on predicting the first 50% of the training data set.
+Also, it works on validation data set since it performs well on the first 60% data.
+
+#(c)
+```{r}
+nn2 <- neuralnet(Phone_sale~.-ID., data = df[train,], linear.output = T, hidden = 1)
+
+plot(nn2, rep="best")
+```
+```{r}
+nn2.train=predict(nn2,newdata=df[train,])
+gain2.train = gains(df[train,]$Phone_sale, nn2.train)
+heights2 = gain2.train$mean.resp/mean(df[train,]$Phone_sale)
+bar2 = barplot(heights2,names.arg=gain2.train$depth,xlab="Percentile",ylab="Response Ratio")
+text(bar2,heights2,labels=round(heights,2),pos=1)
+```
+```{r}
+nn2.valid=predict(nn2,newdata=df[-train,])
+gain2.valid = gains(df[-train,]$Phone_sale, nn2.valid)
+heights2 = gain2.valid$mean.resp/mean(df[-train,]$Phone_sale)
+bar2 = barplot(heights2,names.arg=gain2.valid$depth,xlab="Percentile",ylab="Response Ratio")
+text(bar2,heights2,labels=round(heights,2),pos=1)
+```
+
+
+# (d)
+Reducing the number of predictors or changing the number of hidden layers in the model might improve the performance.

@@ -1,0 +1,140 @@
+---
+title: "Individual Assignment 8"
+output: html_document
+date: '2022-11-11'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Problem8
+```{r}
+library(ISLR)
+attach(Carseats)
+set.seed(1)
+train=sample(1:nrow(Carseats),nrow(Carseats)/2)
+test=(-train)
+summary(Carseats)
+Sales.test=Sales[-train]
+```
+# (d)
+```{r}
+library(randomForest)
+set.seed(2)
+bag.car=randomForest(Sales~.,data=Carseats,subset=train,mtry=10,importance=TRUE)
+bag.car
+```
+```{r}
+yhat.bag=predict(bag.car,newdata=Carseats[test,])
+plot(yhat.bag,Sales.test)
+```
+
+
+```{r}
+mean((yhat.bag-Sales.test)^2)
+```
+### The test MSE is 2.586535
+
+```{r}
+importance(bag.car)
+varImpPlot(bag.car)
+```
+### Price and ShelveLoc are the most important variables.
+# (e)
+```{r}
+for (i in 1:10){
+  set.seed(2)
+  rf.car=randomForest(Sales~.,data=Carseats,subset=train,mtry
+                       =i,importance=TRUE)
+  yhat.rf=predict(rf.car,newdata=Carseats[test,])
+  print(mean((yhat.rf-Sales.test)^2))
+}
+```
+### When m gets bigger, test MSE drops drastically at first but slows down when it gets even bigger. For this reason, it might be the most efficient to choose m=6
+```{r}
+set.seed(2)
+bag.car6=randomForest(Sales~.,data=Carseats,subset=train,mtry=6,importance=TRUE)
+yhat.bag6=predict(bag.car6,newdata=Carseats[test,])
+importance(bag.car6)
+varImpPlot(bag.car6)
+```
+### Price and ShelveLoc are the most important variables when m=6.
+
+# Problem10
+# (a)
+```{r}
+library(ISLR)
+sum(is.na(Hitters$Salary))
+hitters=na.omit(Hitters)
+sum(is.na(hitters$Salary))
+hitters$Salary=log(hitters$Salary)
+```
+# (b)
+```{r}
+train=1:200
+test=201:nrow(hitters)
+hitters.test=hitters$Salary[test]
+```
+(c) Perform boosting on the training set with 1,000 trees for a range of values of the shrinkage parameter λ. Produce a plot with different shrinkage values on the x-axis and the corresponding training set MSE on the y-axis.
+# (c)
+```{r}
+library(gbm)
+set.seed(3)
+mse=vector(mode = "numeric")
+grid=10^seq(-10,0,by=0.05)
+for (i in 1:length(grid)){
+  boost.hittersi = gbm(Salary~.,hitters[train,],distribution = "gaussian", n.trees=1000,shrinkage = grid[i])
+  pred.boost=predict(boost.hittersi,newdata=hitters[train,], n.trees = 1000)
+  mse[i] = mean((pred.boost - hitters$Salary[train])^2)
+}
+plot(grid,mse)
+```
+# (d)
+```{r}
+for (i in 1:length(grid)){
+  boost.hitters = gbm(Salary~.,hitters[train,],distribution = "gaussian", n.trees=1000,shrinkage = grid[i])
+  pred.boost=predict(boost.hitters,newdata=hitters[test,], n.trees = 1000)
+  mse[i] = mean((pred.boost - hitters$Salary[test])^2)
+}
+plot(grid,mse)
+```
+#(e)
+```{r}
+#linear model
+lm.mod=lm(Salary~.,data=hitters[train,])
+lm.pred=predict(lm.mod,hitters[test,])
+mean((lm.pred-hitters.test)^2)
+```
+
+```{r}
+#Ridge regression
+library(glmnet)
+x = model.matrix(Salary~.,data=hitters[train,])
+x.test=model.matrix(Salary~.,data=hitters[test,])
+y = hitters$Salary[train]
+ridge.mod=glmnet(x,y,alpha=0)
+ridge.pred=predict(ridge.mod,s=0.01,newx=x.test)
+mean((ridge.pred-hitters.test)^2)
+```
+
+```{r}
+#boosted trees
+set.seed(5)
+boost.hitters = gbm(Salary~.,hitters[train,],distribution = "gaussian", n.trees=1000)
+pred.boost=predict(boost.hitters,newdata=hitters[test,], n.trees = 1000)
+mean((pred.boost-hitters.test)^2)
+```
+### Among three different approaches, boosted trees model has the lowest test MSE
+# (f)
+```{r}
+summary(boost.hitters)
+```
+### CAtBat is the most important predictor.
+# (g)
+```{r}
+set.seed(5)
+bag.hit=randomForest(Salary~.,data=hitters,subset=train,mtry=19,importance=TRUE)
+yhat.hit=predict(bag.hit,newdata=hitters[test,])
+mean((yhat.hit-hitters.test)^2)
+```

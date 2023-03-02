@@ -1,0 +1,125 @@
+---
+title: "511210_individual assignment3"
+output: html_document
+date: '2022-09-25'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library("ISLR")
+attach(Weekly)
+dim(Weekly)
+```
+
+
+# (a)
+```{r}
+summary(Weekly)
+```
+```{r}
+pairs(Weekly)
+```
+There are no obvious patterns.
+
+# (b)
+```{r}
+glm.fit = glm(Direction~.-Year-Today,family = binomial,data=Weekly)
+summary(glm.fit)
+```
+According to the results above, the predictor "lag2" has p-value<0.05, which is statistically significant.
+
+# (c)
+```{r}
+glm.probs=predict(glm.fit,type = "response")
+glm.pred=rep("Down",1089)
+glm.pred[glm.probs>0.5]="Up"
+table(glm.pred,Direction)
+```
+```{r}
+mean(glm.pred==Direction)
+```
+The correct prediction rate of the model is about 56.11%. The model wrongly predict 430 as "Up" when the actual direction is "Down", and the model wrongly predict 48 as "Down" when the actual direction is "Up". The model predict "Down" about 11.15% correctly and "Up" about 92.07% correctly.
+
+# (d)
+```{r}
+train=(Year<=2008)
+after2008=Weekly[!train,]
+direction.2008=Direction[!train]
+glm.fit=glm(Direction~Lag2, family = binomial, subset = train)
+glm.probs=predict(glm.fit,after2008,type="response")
+glm.pred=rep("Down",104)
+glm.pred[glm.probs>0.5]="Up"
+table(glm.pred,direction.2008)
+```
+```{r}
+mean(glm.pred==direction.2008)
+```
+The fraction of correct predictions is 62.5%
+
+# (e)
+```{r}
+library(MASS)
+lda.fit=lda(Direction~Lag2,subset=train,data=Weekly)
+lda.pred=predict(lda.fit,after2008)
+table(lda.pred$class,direction.2008)
+```
+```{r}
+mean(lda.pred$class==direction.2008)
+```
+
+# (g)
+```{r}
+library(class)
+knntrain=as.matrix(Lag2[train])
+knntest=as.matrix(Lag2[!train])
+train.Direction=Direction[train]
+set.seed(1)
+knn.pred=knn(knntrain,knntest,train.Direction,k=1)
+table(knn.pred,direction.2008)
+```
+```{r}
+mean(knn.pred==direction.2008)
+```
+
+# (h)
+Logistic regression and LDA both provide the best results with high fraction of correct prediction which is 62.5%
+
+# (i)
+### Logistic regression with interaction Lag1:Lag3 and transformation (Lag2)^2
+```{r}
+glm.fit=glm(Direction~(Lag2)^2+Lag1:Lag3, family = binomial, subset = train)
+glm.probs=predict(glm.fit,after2008,type="response")
+glm.pred=rep("Down",104)
+glm.pred[glm.probs>0.5]="Up"
+table(glm.pred,direction.2008)
+```
+
+```{r}
+mean(glm.pred==direction.2008)
+```
+### LDA with interaction Lag1:Lag3 and transformation (Lag2)^2
+```{r}
+lda.fit=lda(Direction~(Lag2)^2+Lag1:Lag3,subset=train,data=Weekly)
+lda.pred=predict(lda.fit,after2008)
+table(lda.pred$class,direction.2008)
+```
+```{r}
+mean(lda.pred$class==direction.2008)
+```
+### KNN with k=200
+```{r}
+knntrain=as.matrix(Lag2[train])
+knntest=as.matrix(Lag2[!train])
+train.Direction=Direction[train]
+set.seed(1)
+knn.pred=knn(knntrain,knntest,train.Direction,k=200)
+table(knn.pred,direction.2008)
+```
+```{r}
+mean(knn.pred==direction.2008)
+```
+By the experiments, it seems that no other Logistic regression and LDA models could have better results than the original ones. Also when k increases, the correct prediction rate increases in KNN model. 

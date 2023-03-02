@@ -1,0 +1,86 @@
+---
+title: "Individual Assignment5"
+output: html_document
+date: '2022-10-08'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# (a)
+```{r}
+set.seed(1)
+x=rnorm(100)
+e=rnorm(100)
+```
+
+# (b)
+```{r}
+y=1+2*x+3*x^2+4*x^3+e
+```
+
+# (c)
+```{r}
+dataxy=data.frame(x,y)
+library(leaps)
+regfit.full=regsubsets(y~poly(x,10),dataxy,nvmax=10)
+reg.summary=summary(regfit.full)
+```
+```{r}
+plot(regfit.full,scale="Cp")
+```
+```{r}
+plot(regfit.full,scale="bic")
+```
+```{r}
+plot(regfit.full,scale="adjr2")
+```
+```{r}
+data.frame(Cp=which.min(reg.summary$cp),BIC=which.min(reg.summary$bic),adjustedR2=which.max(reg.summary$adjr2))
+```
+```{r}
+coef(regfit.full,4)
+```
+```{r}
+coef(regfit.full,3)
+```
+```{r}
+coef(regfit.full,5)
+```
+
+The coefficients of the best model obtained are: Cp= x , x^2 , x^3, x^5 , BIC=x , x^2 , x^3, adjustedR2= x, x^2 , x^3 , x^4 , x^5.
+
+# (d)
+```{r}
+regfit.fwd=regsubsets(y~poly(x,10),dataxy,nvmax=10,method="forward")
+regf.summary=summary(regfit.fwd)
+data.frame(Cp=which.min(regf.summary$cp),BIC=which.min(regf.summary$bic),adjustedR2=which.max(regf.summary$adjr2))
+```
+```{r}
+coef(regfit.fwd,4)
+```
+```{r}
+coef(regfit.fwd,3)
+```
+```{r}
+coef(regfit.fwd,5)
+```
+
+```{r}
+regfit.bwd=regsubsets(y~poly(x,10),dataxy,nvmax=10,method="backward")
+regb.summary=summary(regfit.bwd)
+data.frame(Cp=which.min(regb.summary$cp),BIC=which.min(regb.summary$bic),adjustedR2=which.max(regb.summary$adjr2))
+```
+```{r}
+coef(regfit.bwd,4)
+```
+```{r}
+coef(regfit.bwd,3)
+```
+```{r}
+coef(regfit.bwd,5)
+```
+
+Forward stepwise selection and backwards stepwise selection both have the same results with (c)

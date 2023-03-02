@@ -1,0 +1,97 @@
+---
+title: "511210_individual assignment1"
+output:
+  html_document: default
+  pdf_document: default
+date: '2022-09-09'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("ISLR")
+```
+
+## (a)
+
+There are 506 rows and 14 columns, which represent that there are 506 suburbs with 14 attributes.
+
+```{r,results='hide'}
+
+library(MASS)
+Boston
+?Boston
+
+```
+```{r,}
+
+dim(Boston)
+
+```
+
+## (b)
+
+As shown in the plot, there is a high positive correlation between rm and medv, which means when more rooms in house, the value of the house probably gets higher.
+
+```{r}
+
+pairs(Boston)
+
+```
+
+## (c)
+
+There is a negative correlation between per capita crime rate(crim) and median value of owner-occupied homes(medv), which means the higher value of house, the lower possibility the crime rate is.
+
+## (d)
+
+Below shows the range of each predictor.
+
+```{r}
+
+apply(Boston[,1:14],2,range)
+
+```
+
+## (e)
+
+There are 35 suburbs in this data set bound the Charles river.
+
+```{r}
+
+sum(Boston$chas==1, na.rm = TRUE)
+
+```
+
+## (f)
+
+The median of pupil-teacher ratio is 19.05.
+
+```{r}
+
+median(Boston$ptratio, na.rm = TRUE)
+
+```
+
+## (g)
+
+There are 2 suburbs of Boston that has the lowest median value of owner-occupied homes, and other predictors are shown as below.
+Compared to the overall ranges, the two suburbs have higher proportion of owner-occupied units built prior to 1940(age), which means older homes approximately equals lower value. Also, the two suburbs have higher proportion of blacks, combined to the previous findings, we can infer that most of the old houses are owned by the blacks who have lower income.
+
+```{r}
+
+Boston[Boston$medv == min(Boston$medv, na.rm = TRUE),]
+
+```
+
+## (h)
+
+There are 64 suburbs average more than seven rooms per dwelling, 13 suburbs average more than eight rooms per dwelling.
+According to the suburbs that average more than eight rooms per dwelling, these suburbs tend to have lower crime rates.
+
+```{r}
+
+nrow(Boston[Boston$rm > 7,])
+nrow(Boston[Boston$rm > 8,])
+Boston[Boston$rm > 8,]
+
+```

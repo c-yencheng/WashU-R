@@ -1,0 +1,116 @@
+---
+title: "Individual assignment4"
+output: html_document
+date: '2022-09-29'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ISLR)
+attach(Weekly)
+summary(Weekly)
+```
+# 10.(d)
+```{r}
+train=(Year<2009)
+testing=Weekly[!train,]
+Direction.2010=Direction[!train]
+glm.fit=glm(Direction ~ Lag2, data = Weekly, subset = train,family = binomial)
+glm.probs=predict(glm.fit,testing,type="response")
+glm.pred=rep("Down",dim(testing)[1])
+glm.pred[glm.probs>0.5]="Up"
+table(glm.pred,Direction.2010)
+mean(glm.pred==Direction.2010)
+```
+### The overall fraction of correct predictions is 62.5%.
+
+# (f)
+```{r}
+library(MASS)
+qda.fit=qda(Direction ~ Lag2, data = Weekly, subset = train)
+qda.class=predict(qda.fit,testing)$class
+qda.class
+table(qda.class,Direction.2010)
+mean(qda.class==Direction.2010)
+```
+### The overall fraction of correct predictions is about 58.7%.
+
+# 8. (a)
+```{r}
+set.seed(1)
+x=rnorm(100)
+y=x-2*x^2+rnorm(100)
+```
+### n=100 and p=2, the model used is Y = X - 2X^2 + ε.
+
+# (b)
+```{r}
+plot(x,y)
+```
+
+### As the plot shown, there is a curved relationship between x and y.
+
+# (c)
+## i.
+```{r}
+set.seed(1)
+data.cv=data.frame(x,y)
+library(boot)
+glm.fiti=glm(y ~ x)
+cv.err=cv.glm(data.cv,glm.fiti)
+cv.err$delta[1]
+```
+## ii.
+```{r}
+glm.fitii=glm(y ~ poly(x,2))
+cv.err2=cv.glm(data.cv,glm.fitii)
+cv.err2$delta[1]
+```
+## iii.
+```{r}
+glm.fitiii=glm(y ~ poly(x,3))
+cv.err3=cv.glm(data.cv,glm.fitiii)
+cv.err3$delta[1]
+```
+## iv.
+```{r}
+glm.fitiv=glm(y ~ poly(x,4))
+cv.err4=cv.glm(data.cv,glm.fitiv)
+cv.err4$delta[1]
+```
+
+# (d)
+## i.~iv.
+```{r}
+set.seed(2)
+data.cvd=data.frame(x,y)
+library(boot)
+cv.error=rep(0,4)
+for(i in 1:4){
+  glm.fitd=glm(y ~ poly(x,i),data = data.cvd)
+  cv.error[i]=cv.glm(data.cvd,glm.fitd)$delta[1]
+}
+cv.error
+```
+### The results are the same as I got in (c) beacuse the validation set sizes only 1 and the validation repeats the process for n times, leading to the same average MSE.
+
+# (e)
+### Model ii has the smallest LOOCV error, it is expected because the relation between x and y is quadratic.
+
+# (f)
+```{r}
+summary(glm.fiti)
+```
+```{r}
+summary(glm.fitii)
+```
+```{r}
+summary(glm.fitiii)
+```
+```{r}
+summary(glm.fitiv)
+```
+### According to the summary of the models, the coefficient of x^3 and x^4 do not have p-value<0.05 to reject the hypothesis, and the coefficient of x and x^2 have statistical significance. And the results are correspondent with the fact that Model ii has the smallest LOOCV error.
